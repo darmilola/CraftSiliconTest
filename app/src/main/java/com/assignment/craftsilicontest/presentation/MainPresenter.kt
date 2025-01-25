@@ -60,17 +60,15 @@ class MainPresenter(apiService: ApiService): MainContract.Presenter() {
                         .subscribe(
                             onSuccess = { result ->
                                 mainWeatherView?.showForecastLce(AppUIStates(isSuccess = true))
-                                mainWeatherView?.showForecasts(result.forecasts!!)
+                                mainWeatherView?.showForecasts(result)
                             },
                             onError = {
-                                println("Error 0 ${it.message}")
                                 mainWeatherView?.showForecastLce(AppUIStates(isFailed = true, errorMessage = "Error Getting Forecast"))
                             },
                         )
                 }
                 result.dispose()
             } catch(e: Exception) {
-                println("Error 1 ${e.message}")
                 mainWeatherView?.showForecastLce(AppUIStates(isFailed = true, errorMessage = "Error Getting Forecast"))
             }
         }

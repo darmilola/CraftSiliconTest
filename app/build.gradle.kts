@@ -85,6 +85,7 @@ dependencies {
     // Coroutines - Deferred adapter
     implementation("com.jakewharton.retrofit:retrofit2-kotlin-coroutines-adapter:0.9.2")
 
+
     //di
     val koinVersion = "3.5.3"
     implementation("io.insert-koin:koin-android:$koinVersion")

@@ -1,5 +1,6 @@
 package com.assignment.craftsilicontest.presentation
 
+import android.app.Activity
 import android.os.Parcelable
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -21,14 +22,17 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -41,17 +45,21 @@ import com.assignment.craftsilicontest.component.ButtonComponent
 import com.assignment.craftsilicontest.component.ImageComponent
 import com.assignment.craftsilicontest.component.IndeterminateCircularProgressBar
 import com.assignment.craftsilicontest.component.TextComponent
+import com.assignment.craftsilicontest.domain.models.AppUIStates
 import com.assignment.craftsilicontest.domain.models.City
 import com.assignment.craftsilicontest.domain.models.CityWeather
 import com.assignment.craftsilicontest.domain.models.Forecast
+import com.assignment.craftsilicontest.domain.models.ForecastResponse
 import com.assignment.craftsilicontest.presentation.ViewModel.LoadingViewModel
 import com.assignment.craftsilicontest.presentation.ViewModel.MainViewModel
 import com.assignment.craftsilicontest.presentation.search.SearchHandler
 import com.assignment.craftsilicontest.presentation.search.SearchScreen
+import com.assignment.craftsilicontest.room.AppDatabase
 import com.assignment.craftsilicontest.ui.theme.CraftSiliconTestTheme
 import com.assignment.craftsilicontest.widgets.ErrorOccurredWidget
 import com.assignment.craftsilicontest.widgets.ForecastWidget
 import com.assignment.craftsilicontest.widgets.WeatherWidget
+import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Transient
 import org.koin.core.component.KoinComponent
@@ -66,63 +74,87 @@ class MainScreen: Screen, Parcelable, KoinComponent {
     @Transient private val mainPresenter: MainPresenter by inject()
     @Transient private var mainLoadingViewModel: LoadingViewModel? = null
     @Transient private var forecastLoadingViewModel: LoadingViewModel? = null
-
     @Transient
     private var mainViewModel: MainViewModel? = null
+
 
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
+        val activity = LocalContext.current as Activity
+        val appDatabase = AppDatabase.getDatabase(activity)
+        val scope = rememberCoroutineScope()
 
         mainViewModel = viewModel()
         mainLoadingViewModel = viewModel()
         forecastLoadingViewModel = viewModel()
 
         val selectedCoordinate = mainViewModel!!.selectedCoordinate.collectAsState()
+        val shouldRefresh = mainViewModel!!.shouldRefresh.collectAsState()
         val selectedLatitude = selectedCoordinate.value.latitude
         val selectedLongitude = selectedCoordinate.value.longitude
         val mainUiState = mainLoadingViewModel!!.uiStateInfo.collectAsState()
         val forecastUiState = forecastLoadingViewModel!!.uiStateInfo.collectAsState()
 
         val mainWeather = remember { mutableStateOf(CityWeather()) }
-        val forecasts = remember { mutableStateOf(listOf<Forecast>()) }
+        val forecasts = remember { mutableStateOf(ForecastResponse()) }
 
         val mainHandler = MainHandler(mainLoadingViewModel!!,forecastLoadingViewModel!!,mainPresenter,
             onMainWeatherAvailable = {
-
                 mainWeather.value = it
+                scope.launch {
+                    appDatabase.cityWeatherDao().insert(mainWeather.value)
+                }
 
            }, onForecastAvailable = {
-
                forecasts.value = it
+                scope.launch {
+                    appDatabase.forecastDao().insert(forecasts.value)
+                }
+           })
 
-          })
         mainHandler.init()
 
-        if (selectedLatitude != 0.0 && selectedLongitude != 0.0){
-            mainPresenter.getWeather(lat = selectedLatitude, lon = selectedLongitude)
-            mainPresenter.getForecast(lat = selectedLatitude, lon = selectedLongitude)
+        LaunchedEffect(true) {
+            scope.launch {
+                val cityWeather = appDatabase.cityWeatherDao().getCityWeather()
+                val forecast = appDatabase.forecastDao().getWeatherForecast()
+
+                if (shouldRefresh.value){
+                    mainViewModel!!.setShouldRefresh(false)
+                    if (selectedLatitude != 0.0 && selectedLongitude != 0.0){
+                        appDatabase.cityWeatherDao().deleteWeatherEntry()
+                        appDatabase.forecastDao().deleteWeatherForecast()
+                        mainPresenter.getWeather(lat = selectedLatitude, lon = selectedLongitude)
+                        mainPresenter.getForecast(lat = selectedLatitude, lon = selectedLongitude)
+                    }
+                }
+                else if (cityWeather.isNotEmpty() && forecast.isNotEmpty()) {
+                        mainWeather.value = cityWeather[0]
+                        forecasts.value = forecast[0]
+                        mainViewModel!!.setSelectedCoordinate(mainWeather.value.coordinate!!)
+                        forecastLoadingViewModel!!.switchScreenUIState(AppUIStates(isSuccess = true))
+                        mainLoadingViewModel!!.switchScreenUIState(AppUIStates(isSuccess = true))
+                    }
+
+            }
         }
-
-
-
-        val weeklyForecastList = arrayListOf<Int>()
-        weeklyForecastList.add(1)
-        weeklyForecastList.add(2)
-        weeklyForecastList.add(3)
-        weeklyForecastList.add(4)
-        weeklyForecastList.add(5)
 
 
         CraftSiliconTestTheme {
             Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                Column(modifier = Modifier.fillMaxSize().padding(innerPadding).background(color = Color.Yellow)) {
+                Column(modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .background(color = Color.Yellow)) {
 
 
                     if (selectedLatitude == 0.0 && selectedLongitude == 0.0){
                         // No City Selected
                         Box(
-                            modifier = Modifier.fillMaxWidth().fillMaxHeight()
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .fillMaxHeight()
                                 .padding(top = 40.dp, start = 50.dp, end = 50.dp)
                                 .background(
                                     color = Color.Transparent,
@@ -147,7 +179,9 @@ class MainScreen: Screen, Parcelable, KoinComponent {
                     }
                     if (mainUiState.value.isLoading) {
                         Box(
-                            modifier = Modifier.fillMaxWidth().fillMaxHeight()
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .fillMaxHeight()
                                 .padding(top = 40.dp, start = 50.dp, end = 50.dp)
                                 .background(
                                     color = Color.Transparent,
@@ -159,7 +193,9 @@ class MainScreen: Screen, Parcelable, KoinComponent {
                         }
                     } else if (mainUiState.value.isFailed) {
                         Box(
-                            modifier = Modifier.fillMaxWidth().fillMaxHeight()
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .fillMaxHeight()
                                 .padding(top = 40.dp, start = 50.dp, end = 50.dp)
                                 .background(
                                     color = Color.Transparent,
@@ -170,9 +206,14 @@ class MainScreen: Screen, Parcelable, KoinComponent {
                             ErrorOccurredWidget(
                                 mainUiState.value.errorMessage,
                                 onRetryClicked = {
-                                    if (selectedLatitude != 0.0 && selectedLongitude != 0.0){
-                                        mainPresenter.getWeather(lat = selectedLatitude, lon = selectedLongitude)
-                                        mainPresenter.getForecast(lat = selectedLatitude, lon = selectedLongitude)
+                                    scope.launch {
+                                        appDatabase.cityWeatherDao().deleteWeatherEntry()
+                                        appDatabase.forecastDao().deleteWeatherForecast()
+
+                                        if (selectedLatitude != 0.0 && selectedLongitude != 0.0){
+                                            mainPresenter.getWeather(lat = selectedLatitude, lon = selectedLongitude)
+                                            mainPresenter.getForecast(lat = selectedLatitude, lon = selectedLongitude)
+                                        }
                                     }
                                 })
                         }
@@ -181,26 +222,34 @@ class MainScreen: Screen, Parcelable, KoinComponent {
 
                     else if (mainUiState.value.isSuccess) {
                         Row(
-                            modifier = Modifier.fillMaxWidth().weight(1f)
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f)
                                 .background(color = Color.Yellow)
                         ) {
                             Box(
-                                modifier = Modifier.fillMaxHeight().weight(1f)
+                                modifier = Modifier
+                                    .fillMaxHeight()
+                                    .weight(1f)
                                     .background(color = Color.Yellow),
                                 contentAlignment = Alignment.Center
                             ) {
                                 ImageComponent(
-                                    modifier = Modifier.size(30.dp).clickable {
-                                        val searchScreen = SearchScreen()
-                                        searchScreen.setMainViewModel(mainViewModel!!)
-                                        navigator.push(searchScreen)
-                                    },
+                                    modifier = Modifier
+                                        .size(30.dp)
+                                        .clickable {
+                                            val searchScreen = SearchScreen()
+                                            searchScreen.setMainViewModel(mainViewModel!!)
+                                            navigator.push(searchScreen)
+                                        },
                                     imageRes = R.drawable.search_icon,
                                     colorFilter = ColorFilter.tint(Color.Black)
                                 )
                             }
                             Box(
-                                modifier = Modifier.fillMaxHeight().weight(3f)
+                                modifier = Modifier
+                                    .fillMaxHeight()
+                                    .weight(3f)
                                     .background(color = Color.Yellow),
                                 contentAlignment = Alignment.Center
                             ) {
@@ -214,35 +263,65 @@ class MainScreen: Screen, Parcelable, KoinComponent {
                                 )
                             }
                             Box(
-                                modifier = Modifier.fillMaxHeight().weight(1f)
-                                    .background(color = Color.Yellow)
-                            )
+                                modifier = Modifier
+                                    .fillMaxHeight()
+                                    .weight(1f)
+                                    .clickable {
+                                        scope.launch {
+                                            appDatabase.cityWeatherDao().deleteWeatherEntry()
+                                            appDatabase.forecastDao().deleteWeatherForecast()
+
+                                            if (selectedLatitude != 0.0 && selectedLongitude != 0.0){
+                                                mainPresenter.getWeather(lat = selectedLatitude, lon = selectedLongitude)
+                                                mainPresenter.getForecast(lat = selectedLatitude, lon = selectedLongitude)
+                                            }
+                                        }
+                                    }
+                                    .background(color = Color.Yellow), contentAlignment = Alignment.Center){
+                                TextComponent(
+                                    text = "Refresh",
+                                    fontSize = 20,
+                                    textStyle = MaterialTheme.typography.titleSmall,
+                                    textColor = Color.Black,
+                                    textAlign = TextAlign.Start,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
                         }
 
 
 
                         Column(
-                            modifier = Modifier.fillMaxWidth().weight(3.5f)
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(3.5f)
                                 .background(color = Color.Red)
                         ) {
 
                             Column(
-                                modifier = Modifier.fillMaxWidth().weight(1.5f)
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(1.5f)
                                     .background(color = Color.Green)
                             ) {
                                 Box(
-                                    modifier = Modifier.fillMaxWidth().weight(1f)
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .weight(1f)
                                         .background(color = Color.Yellow),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Box(
-                                        modifier = Modifier.wrapContentSize().clip(CircleShape)
-                                            .background(color = Color.Black).padding(
-                                            start = 20.dp,
-                                            end = 20.dp,
-                                            top = 8.dp,
-                                            bottom = 8.dp
-                                        )
+                                        modifier = Modifier
+                                            .wrapContentSize()
+                                            .clip(CircleShape)
+                                            .background(color = Color.Black)
+                                            .padding(
+                                                start = 20.dp,
+                                                end = 20.dp,
+                                                top = 8.dp,
+                                                bottom = 8.dp
+                                            )
                                     ) {
                                         val simpleDateFormat = SimpleDateFormat("dd MMMM", Locale.ENGLISH)
                                         TextComponent(
@@ -256,24 +335,29 @@ class MainScreen: Screen, Parcelable, KoinComponent {
                                     }
                                 }
                                 Box(
-                                    modifier = Modifier.fillMaxWidth().weight(1f)
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .weight(1f)
                                         .background(color = Color.Yellow),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    TextComponent(
-                                        text = mainWeather.value.weather!![0].main,
-                                        fontSize = 20,
-                                        textStyle = MaterialTheme.typography.titleSmall,
-                                        textColor = Color.Black,
-                                        textAlign = TextAlign.Start,
-                                        fontWeight = FontWeight.Medium
-                                    )
-
+                                    if (mainWeather.value.weather != null) {
+                                        TextComponent(
+                                            text = mainWeather.value.weather!![0].main,
+                                            fontSize = 20,
+                                            textStyle = MaterialTheme.typography.titleSmall,
+                                            textColor = Color.Black,
+                                            textAlign = TextAlign.Start,
+                                            fontWeight = FontWeight.Medium
+                                        )
+                                    }
                                 }
                             }
 
                             Box(
-                                modifier = Modifier.fillMaxWidth().weight(2.5f)
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(2.5f)
                                     .background(color = Color.Yellow),
                                 contentAlignment = Alignment.Center
                             ) {
@@ -291,12 +375,16 @@ class MainScreen: Screen, Parcelable, KoinComponent {
 
 
                         Column(
-                            modifier = Modifier.fillMaxWidth().weight(2.3f)
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(2.3f)
                                 .background(color = Color.Yellow)
                                 .padding(start = 30.dp, end = 30.dp)
                         ) {
 
-                            Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
+                            Box(modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f)) {
                                 TextComponent(
                                     text = "Daily Summary",
                                     fontSize = 20,
@@ -307,7 +395,9 @@ class MainScreen: Screen, Parcelable, KoinComponent {
                                 )
                             }
 
-                            Box(modifier = Modifier.fillMaxWidth().weight(4f)) {
+                            Box(modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(4f)) {
                                 WeatherWidget(mainWeather.value)
                             }
 
@@ -315,12 +405,16 @@ class MainScreen: Screen, Parcelable, KoinComponent {
 
 
                         Column(
-                            modifier = Modifier.fillMaxWidth().weight(2.2f)
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(2.2f)
                                 .background(color = Color.Yellow)
                                 .padding(start = 30.dp, end = 30.dp, top = 10.dp)
                         ) {
                             Box(
-                                modifier = Modifier.fillMaxWidth().weight(1f),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(1f),
                                 contentAlignment = Alignment.CenterStart
                             ) {
                                 TextComponent(
@@ -333,12 +427,16 @@ class MainScreen: Screen, Parcelable, KoinComponent {
                                 )
                             }
                             Box(
-                                modifier = Modifier.fillMaxWidth().weight(4f)
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(4f)
                                     .background(color = Color.Yellow)
                             ) {
                                 if (forecastUiState.value.isLoading) {
                                     Box(
-                                        modifier = Modifier.fillMaxWidth().fillMaxHeight()
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .fillMaxHeight()
                                             .padding(top = 40.dp, start = 50.dp, end = 50.dp)
                                             .background(
                                                 color = Color.Transparent,
@@ -350,7 +448,9 @@ class MainScreen: Screen, Parcelable, KoinComponent {
                                     }
                                 } else if (forecastUiState.value.isFailed) {
                                     Box(
-                                        modifier = Modifier.fillMaxWidth().fillMaxHeight()
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .fillMaxHeight()
                                             .padding(top = 40.dp, start = 50.dp, end = 50.dp)
                                             .background(
                                                 color = Color.Transparent,
@@ -370,12 +470,16 @@ class MainScreen: Screen, Parcelable, KoinComponent {
                                             })
                                     }
                                 } else if (forecastUiState.value.isSuccess) {
-                                    LazyRow(
-                                        modifier = Modifier.padding(top = 10.dp).fillMaxSize()
-                                            .background(color = Color.Yellow)
-                                    ) {
-                                        items(items = forecasts.value) { item ->
-                                            ForecastWidget(item)
+                                    if (forecasts.value.forecasts != null) {
+                                        LazyRow(
+                                            modifier = Modifier
+                                                .padding(top = 10.dp)
+                                                .fillMaxSize()
+                                                .background(color = Color.Yellow)
+                                        ) {
+                                            items(items = forecasts.value.forecasts!!) { item ->
+                                                ForecastWidget(item)
+                                            }
                                         }
                                     }
                                 }

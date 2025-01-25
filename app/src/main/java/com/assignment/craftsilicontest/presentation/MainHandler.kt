@@ -4,6 +4,7 @@ import com.assignment.craftsilicontest.domain.models.AppUIStates
 import com.assignment.craftsilicontest.domain.models.City
 import com.assignment.craftsilicontest.domain.models.CityWeather
 import com.assignment.craftsilicontest.domain.models.Forecast
+import com.assignment.craftsilicontest.domain.models.ForecastResponse
 import com.assignment.craftsilicontest.presentation.ViewModel.LoadingViewModel
 
 class MainHandler(
@@ -11,7 +12,7 @@ class MainHandler(
     private val forecastLoadingViewModel: LoadingViewModel,
     private val mainPresenter: MainPresenter,
     private val onMainWeatherAvailable: (CityWeather) -> Unit,
-    private val onForecastAvailable: (List<Forecast>) -> Unit) : MainContract.MainWeatherView {
+    private val onForecastAvailable: (forecastResponse: ForecastResponse) -> Unit) : MainContract.MainWeatherView {
 
     fun init() {
         mainPresenter.registerMainWeatherContract(this)
@@ -29,8 +30,8 @@ class MainHandler(
         onMainWeatherAvailable(cityWeather)
     }
 
-    override fun showForecasts(forecasts: List<Forecast>) {
-        onForecastAvailable(forecasts)
+    override fun showForecasts(forecastResponse: ForecastResponse) {
+        onForecastAvailable(forecastResponse)
     }
 
 

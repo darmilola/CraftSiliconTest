@@ -4,6 +4,7 @@ import com.assignment.craftsilicontest.domain.models.AppUIStates
 import com.assignment.craftsilicontest.domain.models.City
 import com.assignment.craftsilicontest.domain.models.CityWeather
 import com.assignment.craftsilicontest.domain.models.Forecast
+import com.assignment.craftsilicontest.domain.models.ForecastResponse
 
 class MainContract {
 
@@ -11,7 +12,7 @@ class MainContract {
         fun showMainWeatherLce(appUIStates: AppUIStates)
         fun showForecastLce(appUIStates: AppUIStates)
         fun showMainWeather(cityWeather: CityWeather)
-        fun showForecasts(forecasts: List<Forecast>)
+        fun showForecasts(forecastResponse: ForecastResponse)
     }
 
     interface SearchCityView {

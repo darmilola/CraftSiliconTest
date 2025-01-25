@@ -128,6 +128,7 @@ class SearchScreen: Screen, Parcelable, KoinComponent{
                             items(cityListState.value.size) { it ->
                                 CityItem(cityListState.value[it], onCitySelected = {
                                     mainViewModel!!.setSelectedCoordinate(Coordinate(latitude = it.latitude, longitude = it.longitude))
+                                    mainViewModel!!.setShouldRefresh(true)
                                     navigator.pop()
                                 })
                             }
