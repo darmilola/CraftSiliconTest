@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("kotlin-parcelize")
+    kotlin("plugin.serialization") version "1.9.21"
 }
 
 android {
@@ -60,4 +62,35 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation("cafe.adriel.voyager:voyager-transitions:$voyagerVersion")
     implementation("cafe.adriel.voyager:voyager-navigator:$voyagerVersion")
+    implementation(libs.koin.androidx.compose)
+    implementation(libs.koin.android)
+
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
+
+    val ktorVersion = "2.3.12"
+    implementation("io.ktor:ktor-client-android:$ktorVersion")
+    implementation("io.ktor:ktor-client-core:$ktorVersion")
+    implementation("io.ktor:ktor-client-serialization-jvm:$ktorVersion")
+    implementation("io.ktor:ktor-client-logging:$ktorVersion")
+    implementation("io.ktor:ktor-client-android")
+    implementation("io.ktor:ktor-client-serialization:$ktorVersion")
+    implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
+
+    //Coroutines
+    val coroutinesVersion = "1.6.3"
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1")
+    // Coroutines - Deferred adapter
+    implementation("com.jakewharton.retrofit:retrofit2-kotlin-coroutines-adapter:0.9.2")
+
+    //di
+    val koinVersion = "3.5.3"
+    implementation("io.insert-koin:koin-android:$koinVersion")
+    implementation("io.reactivex.rxjava2:rxkotlin:2.3.0")
+
+    //reactiveX
+    implementation ("com.badoo.reaktive:reaktive:2.1.0-beta01")
+    implementation ("com.badoo.reaktive:reaktive-annotations:2.1.0-beta01")
+    implementation ("com.badoo.reaktive:coroutines-interop:2.1.0-beta01")
 }
