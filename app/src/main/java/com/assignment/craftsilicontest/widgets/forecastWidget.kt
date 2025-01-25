@@ -28,9 +28,14 @@ import androidx.compose.ui.unit.dp
 import com.assignment.craftsilicontest.R
 import com.assignment.craftsilicontest.component.ImageComponent
 import com.assignment.craftsilicontest.component.TextComponent
+import com.assignment.craftsilicontest.domain.models.Forecast
+import java.sql.Timestamp
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
-fun ForecastWidget() {
+fun ForecastWidget(forecast: Forecast) {
     Box(modifier = Modifier.fillMaxHeight().width(100.dp).padding(10.dp).
     background(color = Color.Transparent).
     border(border = BorderStroke(width = 2.dp, color = Color.Black), shape = RoundedCornerShape(10.dp))){
@@ -40,7 +45,7 @@ fun ForecastWidget() {
         ) {
             Box(modifier = Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.BottomCenter){
                 TextComponent(
-                    text = "17°",
+                    text = forecast.main!!.temperature.toString()+"°",
                     fontSize = 15,
                     textStyle = MaterialTheme.typography.titleSmall,
                     textColor = Color.Black,
@@ -55,9 +60,11 @@ fun ForecastWidget() {
                     colorFilter = ColorFilter.tint(Color.Black)
                 )
             }
+            val simpleDateFormat = SimpleDateFormat("dd MMMM", Locale.ENGLISH)
+
             Box(modifier = Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.TopCenter){
                 TextComponent(
-                    text = "21 Jan",
+                    text = simpleDateFormat.format(forecast.date * 1000L),
                     fontSize = 15,
                     textStyle = MaterialTheme.typography.titleSmall,
                     textColor = Color.Black,

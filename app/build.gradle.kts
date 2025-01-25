@@ -93,4 +93,5 @@ dependencies {
     implementation ("com.badoo.reaktive:reaktive:2.1.0-beta01")
     implementation ("com.badoo.reaktive:reaktive-annotations:2.1.0-beta01")
     implementation ("com.badoo.reaktive:coroutines-interop:2.1.0-beta01")
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
 }

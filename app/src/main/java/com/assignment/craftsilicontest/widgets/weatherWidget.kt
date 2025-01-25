@@ -25,9 +25,10 @@ import androidx.compose.ui.unit.dp
 import com.assignment.craftsilicontest.R
 import com.assignment.craftsilicontest.component.ImageComponent
 import com.assignment.craftsilicontest.component.TextComponent
+import com.assignment.craftsilicontest.domain.models.CityWeather
 
 @Composable
-fun WeatherWidget() {
+fun WeatherWidget(cityWeather: CityWeather) {
     Row(
         modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(10.dp))
             .background(color = Color.Blue)
@@ -45,7 +46,7 @@ fun WeatherWidget() {
             }
             Box(modifier = Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center){
                 TextComponent(
-                    text = "21Km/h",
+                    text = cityWeather.wind?.speed.toString()+"Km/h",
                     fontSize = 20,
                     textStyle = MaterialTheme.typography.titleSmall,
                     textColor = Color.Yellow,
@@ -79,7 +80,7 @@ fun WeatherWidget() {
             }
             Box(modifier = Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center){
                 TextComponent(
-                    text = "78%",
+                    text = cityWeather.mainForecast?.humidity.toString()+"%",
                     fontSize = 20,
                     textStyle = MaterialTheme.typography.titleSmall,
                     textColor = Color.Yellow,
@@ -113,7 +114,7 @@ fun WeatherWidget() {
             }
             Box(modifier = Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center){
                 TextComponent(
-                    text = "0.8Km",
+                    text = cityWeather.visibility.toString()+"M",
                     fontSize = 20,
                     textStyle = MaterialTheme.typography.titleSmall,
                     textColor = Color.Yellow,

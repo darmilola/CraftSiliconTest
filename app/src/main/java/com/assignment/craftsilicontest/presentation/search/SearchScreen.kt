@@ -29,9 +29,11 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import com.assignment.craftsilicontest.component.IndeterminateCircularProgressBar
 import com.assignment.craftsilicontest.domain.models.AppUIStates
 import com.assignment.craftsilicontest.domain.models.City
+import com.assignment.craftsilicontest.domain.models.Coordinate
 import com.assignment.craftsilicontest.presentation.MainContract
 import com.assignment.craftsilicontest.presentation.MainPresenter
 import com.assignment.craftsilicontest.presentation.ViewModel.LoadingViewModel
+import com.assignment.craftsilicontest.presentation.ViewModel.MainViewModel
 import com.assignment.craftsilicontest.ui.theme.CraftSiliconTestTheme
 import com.assignment.craftsilicontest.widgets.SearchBarWidget
 import com.assignment.craftsilicontest.widgets.CityItem
@@ -46,6 +48,13 @@ import org.koin.core.component.inject
 class SearchScreen: Screen, Parcelable, KoinComponent{
     @Transient private val mainPresenter: MainPresenter by inject()
     @Transient private var loadingViewModel: LoadingViewModel? = null
+    @Transient
+    private var mainViewModel: MainViewModel? = null
+
+    fun setMainViewModel(mainViewModel: MainViewModel) {
+        this.mainViewModel = mainViewModel
+    }
+
 
     @Composable
     override fun Content() {
@@ -117,7 +126,10 @@ class SearchScreen: Screen, Parcelable, KoinComponent{
                             userScrollEnabled = true
                         ) {
                             items(cityListState.value.size) { it ->
-                                CityItem(cityListState.value[it], onCitySelected = {})
+                                CityItem(cityListState.value[it], onCitySelected = {
+                                    mainViewModel!!.setSelectedCoordinate(Coordinate(latitude = it.latitude, longitude = it.longitude))
+                                    navigator.pop()
+                                })
                             }
                         }
                     }

@@ -60,15 +60,17 @@ class MainPresenter(apiService: ApiService): MainContract.Presenter() {
                         .subscribe(
                             onSuccess = { result ->
                                 mainWeatherView?.showForecastLce(AppUIStates(isSuccess = true))
-                                mainWeatherView?.showForecasts(result)
+                                mainWeatherView?.showForecasts(result.forecasts!!)
                             },
                             onError = {
+                                println("Error 0 ${it.message}")
                                 mainWeatherView?.showForecastLce(AppUIStates(isFailed = true, errorMessage = "Error Getting Forecast"))
                             },
                         )
                 }
                 result.dispose()
             } catch(e: Exception) {
+                println("Error 1 ${e.message}")
                 mainWeatherView?.showForecastLce(AppUIStates(isFailed = true, errorMessage = "Error Getting Forecast"))
             }
         }
@@ -86,12 +88,14 @@ class MainPresenter(apiService: ApiService): MainContract.Presenter() {
                                 mainWeatherView?.showMainWeather(result)
                             },
                             onError = {
+                                println("Error 0 ${it.message}")
                                 mainWeatherView?.showMainWeatherLce(AppUIStates(isFailed = true, errorMessage = "Error Getting Weather"))
                             },
                         )
                 }
                 result.dispose()
             } catch(e: Exception) {
+                println("Error 1 ${e.message}")
                 mainWeatherView?.showMainWeatherLce(AppUIStates(isFailed = true, errorMessage = "Error Getting Weather"))
             }
         }
