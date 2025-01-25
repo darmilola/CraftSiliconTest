@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("kotlin-parcelize")
+    id("kotlin-kapt")
     kotlin("plugin.serialization") version "1.9.21"
 }
 
@@ -94,4 +95,8 @@ dependencies {
     implementation ("com.badoo.reaktive:reaktive-annotations:2.1.0-beta01")
     implementation ("com.badoo.reaktive:coroutines-interop:2.1.0-beta01")
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
+
+    implementation("androidx.room:room-runtime:2.6.1")
+    kapt("androidx.room:room-compiler:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
 }
