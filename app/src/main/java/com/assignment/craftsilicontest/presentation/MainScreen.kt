@@ -2,7 +2,6 @@ package com.assignment.craftsilicontest.presentation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,19 +11,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.font.FontWeight
@@ -36,13 +31,10 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import com.assignment.craftsilicontest.R
 import com.assignment.craftsilicontest.component.ImageComponent
 import com.assignment.craftsilicontest.component.TextComponent
+import com.assignment.craftsilicontest.presentation.search.SearchScreen
 import com.assignment.craftsilicontest.ui.theme.CraftSiliconTestTheme
-import com.assignment.craftsilicontest.ui.theme.Purple40
-import com.assignment.craftsilicontest.ui.theme.Purple80
-import com.assignment.craftsilicontest.ui.theme.Yellow
 import com.assignment.craftsilicontest.widgets.ForecastWidget
 import com.assignment.craftsilicontest.widgets.WeatherWidget
-import kotlinx.coroutines.delay
 
 
 class MainScreen(): Screen {

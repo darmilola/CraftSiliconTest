@@ -1,12 +1,11 @@
 package com.assignment.craftsilicontest.widgets
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -25,17 +24,21 @@ import androidx.compose.ui.unit.dp
 import com.assignment.craftsilicontest.R
 import com.assignment.craftsilicontest.component.ImageComponent
 import com.assignment.craftsilicontest.component.TextComponent
+import com.assignment.craftsilicontest.domain.models.City
 
 @Composable
-fun SearchItem() {
+fun CityItem(city: City, onCitySelected:(City) -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth().height(100.dp).clip(RoundedCornerShape(10.dp))
+            .clickable {
+                onCitySelected(city)
+            }
             .background(color = Color.Black)
     ) {
         Box(modifier = Modifier.fillMaxHeight()
             .weight(2f).background(color = Color.Black), contentAlignment = Alignment.Center){
             TextComponent(
-                text = "Akure",
+                text = city.cityName,
                 fontSize = 20,
                 textStyle = MaterialTheme.typography.titleLarge,
                 textColor = Color.Yellow,
@@ -53,7 +56,7 @@ fun SearchItem() {
             )
 
                TextComponent(
-                    text = "Soroti",
+                    text = city.state,
                     fontSize = 20,
                     textStyle = MaterialTheme.typography.titleSmall,
                     textColor = Color.Yellow,
@@ -72,7 +75,7 @@ fun SearchItem() {
             )
 
             TextComponent(
-                text = "UG",
+                text = city.country,
                 fontSize = 20,
                 textStyle = MaterialTheme.typography.titleSmall,
                 textColor = Color.Yellow,
