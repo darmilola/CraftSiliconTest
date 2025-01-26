@@ -43,9 +43,6 @@ android {
 }
 
 dependencies {
-
-    val voyagerVersion = "1.1.0-beta02"
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -61,13 +58,15 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-    implementation("cafe.adriel.voyager:voyager-transitions:$voyagerVersion")
-    implementation("cafe.adriel.voyager:voyager-navigator:$voyagerVersion")
     implementation(libs.koin.androidx.compose)
     implementation(libs.koin.android)
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
+    //Navigation
+    val voyagerVersion = "1.1.0-beta02"
+    implementation("cafe.adriel.voyager:voyager-transitions:$voyagerVersion")
+    implementation("cafe.adriel.voyager:voyager-navigator:$voyagerVersion")
 
+    //Networking
     val ktorVersion = "2.3.12"
     implementation("io.ktor:ktor-client-android:$ktorVersion")
     implementation("io.ktor:ktor-client-core:$ktorVersion")
@@ -77,6 +76,7 @@ dependencies {
     implementation("io.ktor:ktor-client-serialization:$ktorVersion")
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
 
     //Coroutines
     val coroutinesVersion = "1.6.3"
@@ -97,6 +97,7 @@ dependencies {
     implementation ("com.badoo.reaktive:coroutines-interop:2.1.0-beta01")
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
 
+    //database
     implementation("androidx.room:room-runtime:2.6.1")
     kapt("androidx.room:room-compiler:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")

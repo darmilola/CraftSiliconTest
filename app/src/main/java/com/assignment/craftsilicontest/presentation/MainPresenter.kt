@@ -1,10 +1,8 @@
 package com.assignment.craftsilicontest.presentation
 
-import com.assignment.craftsilicontest.di.ApiService
+import com.assignment.craftsilicontest.domain.ApiService
 import com.assignment.craftsilicontest.domain.models.AppUIStates
-import com.assignment.craftsilicontest.domain.repository.RemoteRepository
 import com.assignment.craftsilicontest.domain.repository.RemoteRepositoryImpl
-import io.ktor.client.HttpClient
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
@@ -86,14 +84,12 @@ class MainPresenter(apiService: ApiService): MainContract.Presenter() {
                                 mainWeatherView?.showMainWeather(result)
                             },
                             onError = {
-                                println("Error 0 ${it.message}")
                                 mainWeatherView?.showMainWeatherLce(AppUIStates(isFailed = true, errorMessage = "Error Getting Weather"))
                             },
                         )
                 }
                 result.dispose()
             } catch(e: Exception) {
-                println("Error 1 ${e.message}")
                 mainWeatherView?.showMainWeatherLce(AppUIStates(isFailed = true, errorMessage = "Error Getting Weather"))
             }
         }

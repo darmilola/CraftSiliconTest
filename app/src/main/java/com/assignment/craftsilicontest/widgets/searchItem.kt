@@ -65,22 +65,13 @@ fun CityItem(city: City, onCitySelected:(City) -> Unit) {
                 )
 
         }
-        Row(modifier = Modifier.fillMaxHeight().weight(1f)
+        Row(modifier = Modifier.fillMaxHeight().weight(0.5f)
             .background(color = Color.Black), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center){
 
             ImageComponent(
-                modifier = Modifier.size(24.dp).padding(end = 10.dp),
-                imageRes = R.drawable.country_icon,
+                modifier = Modifier.size(24.dp),
+                imageRes = R.drawable.right_arrow,
                 colorFilter = ColorFilter.tint(Color.Yellow)
-            )
-
-            TextComponent(
-                text = city.country,
-                fontSize = 20,
-                textStyle = MaterialTheme.typography.titleSmall,
-                textColor = Color.Yellow,
-                textAlign = TextAlign.Start,
-                fontWeight = FontWeight.Medium
             )
 
         }

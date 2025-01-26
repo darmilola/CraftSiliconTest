@@ -1,8 +1,7 @@
-package com.assignment.craftsilicontest.di
+package com.assignment.craftsilicontest.domain
 
 import com.assignment.craftsilicontest.domain.models.City
 import com.assignment.craftsilicontest.domain.models.CityWeather
-import com.assignment.craftsilicontest.domain.models.Forecast
 import com.assignment.craftsilicontest.domain.models.ForecastResponse
 import com.badoo.reaktive.single.toSingle
 import io.ktor.client.HttpClient

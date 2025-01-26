@@ -1,5 +1,7 @@
 package com.assignment.craftsilicontest.di
 
+import com.assignment.craftsilicontest.domain.ApiService
+import com.assignment.craftsilicontest.domain.httpClient
 import com.assignment.craftsilicontest.presentation.mainModule
 import io.ktor.client.HttpClient
 import org.koin.core.context.startKoin

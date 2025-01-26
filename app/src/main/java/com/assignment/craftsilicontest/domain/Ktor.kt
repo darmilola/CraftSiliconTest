@@ -1,4 +1,4 @@
-package com.assignment.craftsilicontest.di
+package com.assignment.craftsilicontest.domain
 
 import android.util.Log
 import io.ktor.client.HttpClient

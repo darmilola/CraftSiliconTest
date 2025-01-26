@@ -1,9 +1,8 @@
 package com.assignment.craftsilicontest.domain.repository
 
-import com.assignment.craftsilicontest.di.ApiService
+import com.assignment.craftsilicontest.domain.ApiService
 import com.assignment.craftsilicontest.domain.models.City
 import com.assignment.craftsilicontest.domain.models.CityWeather
-import com.assignment.craftsilicontest.domain.models.Forecast
 import com.assignment.craftsilicontest.domain.models.ForecastResponse
 import com.badoo.reaktive.single.Single
 

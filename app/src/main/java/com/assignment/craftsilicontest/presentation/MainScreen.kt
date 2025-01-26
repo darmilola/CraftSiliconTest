@@ -5,6 +5,7 @@ import android.os.Parcelable
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -74,8 +75,7 @@ class MainScreen: Screen, Parcelable, KoinComponent {
     @Transient private val mainPresenter: MainPresenter by inject()
     @Transient private var mainLoadingViewModel: LoadingViewModel? = null
     @Transient private var forecastLoadingViewModel: LoadingViewModel? = null
-    @Transient
-    private var mainViewModel: MainViewModel? = null
+    @Transient private var mainViewModel: MainViewModel? = null
 
 
     @Composable
@@ -142,7 +142,7 @@ class MainScreen: Screen, Parcelable, KoinComponent {
 
 
         CraftSiliconTestTheme {
-            Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+            Scaffold(modifier = Modifier.fillMaxSize().background(color = Color.Yellow)) { innerPadding ->
                 Column(modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
@@ -150,77 +150,33 @@ class MainScreen: Screen, Parcelable, KoinComponent {
 
 
                     if (selectedLatitude == 0.0 && selectedLongitude == 0.0){
-                        // No City Selected
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .fillMaxHeight()
-                                .padding(top = 40.dp, start = 50.dp, end = 50.dp)
-                                .background(
-                                    color = Color.Transparent,
-                                    shape = RoundedCornerShape(20.dp)
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            val buttonStyle = Modifier
-                                .padding(top = 15.dp)
-                                .fillMaxWidth(0.60f)
-                                .background(color = Color.Transparent)
-                                .height(45.dp)
-
-                            ButtonComponent(modifier = buttonStyle, buttonText = "Search City", borderStroke = BorderStroke(2.dp, color = Color.Black), fontSize = 16, shape = CircleShape, textColor =  Color.DarkGray, style = MaterialTheme.typography.titleLarge,
-                            ){
-                                val searchScreen = SearchScreen()
-                                searchScreen.setMainViewModel(mainViewModel!!)
-                                navigator.push(searchScreen)
-                            }
+                        // Select City
+                        SelectCity {
+                            val searchScreen = SearchScreen()
+                            searchScreen.setMainViewModel(mainViewModel!!)
+                            navigator.push(searchScreen)
                         }
-
                     }
                     if (mainUiState.value.isLoading) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .fillMaxHeight()
-                                .padding(top = 40.dp, start = 50.dp, end = 50.dp)
-                                .background(
-                                    color = Color.Transparent,
-                                    shape = RoundedCornerShape(20.dp)
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            IndeterminateCircularProgressBar()
-                        }
-                    } else if (mainUiState.value.isFailed) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .fillMaxHeight()
-                                .padding(top = 40.dp, start = 50.dp, end = 50.dp)
-                                .background(
-                                    color = Color.Transparent,
-                                    shape = RoundedCornerShape(20.dp)
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            ErrorOccurredWidget(
-                                mainUiState.value.errorMessage,
-                                onRetryClicked = {
-                                    scope.launch {
-                                        appDatabase.cityWeatherDao().deleteWeatherEntry()
-                                        appDatabase.forecastDao().deleteWeatherForecast()
+                        // loading
+                        Loading()
+                    }
+                    else if (mainUiState.value.isFailed) {
+                        // Error Occurred
+                        ErrorOccurred(errorMessage = mainUiState.value.errorMessage) {
+                            scope.launch {
+                                appDatabase.cityWeatherDao().deleteWeatherEntry()
+                                appDatabase.forecastDao().deleteWeatherForecast()
 
-                                        if (selectedLatitude != 0.0 && selectedLongitude != 0.0){
-                                            mainPresenter.getWeather(lat = selectedLatitude, lon = selectedLongitude)
-                                            mainPresenter.getForecast(lat = selectedLatitude, lon = selectedLongitude)
-                                        }
-                                    }
-                                })
+                                if (selectedLatitude != 0.0 && selectedLongitude != 0.0){
+                                    mainPresenter.getWeather(lat = selectedLatitude, lon = selectedLongitude)
+                                    mainPresenter.getForecast(lat = selectedLatitude, lon = selectedLongitude)
+                                }
+                            }
                         }
                     }
-
-
                     else if (mainUiState.value.isSuccess) {
+                        //Success show content
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -384,7 +340,7 @@ class MainScreen: Screen, Parcelable, KoinComponent {
 
                             Box(modifier = Modifier
                                 .fillMaxWidth()
-                                .weight(1f)) {
+                                .weight(1f), contentAlignment = Alignment.Center) {
                                 TextComponent(
                                     text = "Daily Summary",
                                     fontSize = 20,
@@ -409,13 +365,15 @@ class MainScreen: Screen, Parcelable, KoinComponent {
                                 .fillMaxWidth()
                                 .weight(2.2f)
                                 .background(color = Color.Yellow)
-                                .padding(start = 30.dp, end = 30.dp, top = 10.dp)
+                                .padding(start = 30.dp, end = 30.dp, top = 10.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
                         ) {
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .weight(1f),
-                                contentAlignment = Alignment.CenterStart
+                                contentAlignment = Alignment.Center
                             ) {
                                 TextComponent(
                                     text = "Weekly forecast",
@@ -433,49 +391,31 @@ class MainScreen: Screen, Parcelable, KoinComponent {
                                     .background(color = Color.Yellow)
                             ) {
                                 if (forecastUiState.value.isLoading) {
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .fillMaxHeight()
-                                            .padding(top = 40.dp, start = 50.dp, end = 50.dp)
-                                            .background(
-                                                color = Color.Transparent,
-                                                shape = RoundedCornerShape(20.dp)
-                                            ),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        IndeterminateCircularProgressBar()
+                                    // Loading Forecast
+                                    Loading()
+                                }
+                                else if (forecastUiState.value.isFailed) {
+                                    ErrorOccurred(errorMessage = mainUiState.value.errorMessage) {
+                                        scope.launch {
+                                            appDatabase.cityWeatherDao().deleteWeatherEntry()
+                                            appDatabase.forecastDao().deleteWeatherForecast()
+
+                                            if (selectedLatitude != 0.0 && selectedLongitude != 0.0){
+                                                mainPresenter.getWeather(lat = selectedLatitude, lon = selectedLongitude)
+                                                mainPresenter.getForecast(lat = selectedLatitude, lon = selectedLongitude)
+                                            }
+                                        }
                                     }
-                                } else if (forecastUiState.value.isFailed) {
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .fillMaxHeight()
-                                            .padding(top = 40.dp, start = 50.dp, end = 50.dp)
-                                            .background(
-                                                color = Color.Transparent,
-                                                shape = RoundedCornerShape(20.dp)
-                                            ),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        ErrorOccurredWidget(
-                                            mainUiState.value.errorMessage,
-                                            onRetryClicked = {
-                                                if (selectedLatitude != 0.0 && selectedLongitude != 0.0) {
-                                                    mainPresenter.getWeather(
-                                                        lat = selectedLatitude,
-                                                        lon = selectedLongitude
-                                                    )
-                                                }
-                                            })
-                                    }
-                                } else if (forecastUiState.value.isSuccess) {
+                                }
+                                else if (forecastUiState.value.isSuccess) {
                                     if (forecasts.value.forecasts != null) {
                                         LazyRow(
                                             modifier = Modifier
                                                 .padding(top = 10.dp)
                                                 .fillMaxSize()
-                                                .background(color = Color.Yellow)
+                                                .background(color = Color.Yellow),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.Center
                                         ) {
                                             items(items = forecasts.value.forecasts!!) { item ->
                                                 ForecastWidget(item)
@@ -494,4 +434,80 @@ class MainScreen: Screen, Parcelable, KoinComponent {
         }
 
     }
+
+    @Composable
+   private fun SelectCity(onSelectCityClicked:() -> Unit){
+        val columnModifier = Modifier
+            .fillMaxSize()
+        Column(
+            modifier = columnModifier,
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment  = Alignment.CenterHorizontally,
+        ) {
+
+            ImageComponent(
+                    modifier = Modifier
+                        .size(150.dp),
+                    imageRes = R.drawable.city_icon,
+                    colorFilter = ColorFilter.tint(color = Color.Black)
+                )
+
+            val buttonStyle = Modifier
+                    .padding(top = 15.dp)
+                    .fillMaxWidth(0.60f)
+                    .background(color = Color.Transparent)
+                    .height(45.dp)
+
+                ButtonComponent(
+                    modifier = buttonStyle,
+                    buttonText = "Select City",
+                    borderStroke = BorderStroke(2.dp, color = Color.Black),
+                    fontSize = 16,
+                    shape = CircleShape,
+                    textColor = Color.DarkGray,
+                    style = MaterialTheme.typography.titleLarge,
+                ) {
+                    onSelectCityClicked()
+                }
+        }
+    }
+
+    @Composable
+    private fun Loading(){
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight()
+                .padding(top = 40.dp, start = 50.dp, end = 50.dp)
+                .background(
+                    color = Color.Transparent,
+                    shape = RoundedCornerShape(20.dp)
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            IndeterminateCircularProgressBar()
+        }
+    }
+
+    @Composable
+    private fun ErrorOccurred(errorMessage: String, onRetryClicked:()-> Unit){
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight()
+                .padding(top = 40.dp, start = 50.dp, end = 50.dp)
+                .background(
+                    color = Color.Transparent,
+                    shape = RoundedCornerShape(20.dp)
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            ErrorOccurredWidget(
+                errorMessage,
+                onRetryClicked = {
+                   onRetryClicked()
+                })
+        }
+    }
+
 }

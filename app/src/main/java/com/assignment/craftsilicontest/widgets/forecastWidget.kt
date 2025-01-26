@@ -60,7 +60,7 @@ fun ForecastWidget(forecast: Forecast) {
                     colorFilter = ColorFilter.tint(Color.Black)
                 )
             }
-            val simpleDateFormat = SimpleDateFormat("dd MMMM", Locale.ENGLISH)
+            val simpleDateFormat = SimpleDateFormat("dd MMM", Locale.ENGLISH)
 
             Box(modifier = Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.TopCenter){
                 TextComponent(
